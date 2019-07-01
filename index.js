@@ -1,9 +1,12 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+var morgan = require('morgan');
+const cors = require('cors');
 
+app.use(cors());
+app.use(morgan('tiny'));
 app.use(bodyParser.json());
-
 
 let persons = [
     {
@@ -74,10 +77,10 @@ app.post('/api/persons', (request, response) => {
     }
 });
 
-app.get('*', (req, res) => {
-    res.status(404);
-    res.send('<h1>404: Not found</h1>')
-});
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+app.use(unknownEndpoint);
 
 const port = 3001;
 
