@@ -47,6 +47,13 @@ app.get('/api/persons/:id', (req, res) => {
     }
 });
 
+app.delete('/api/persons/:id', (req, res) => {
+    const id = Number(req.params.id);
+    persons = persons.filter(person => person.id !== id);
+
+    res.status(204).end();
+});
+
 app.get('*', (req, res) => {
     res.status(404);
     res.send('<h1>404: Not found</h1>')
