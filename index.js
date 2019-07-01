@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.json());
+
 
 let persons = [
     {
@@ -54,6 +58,22 @@ app.delete('/api/persons/:id', (req, res) => {
     res.status(204).end();
 });
 
+app.post('/api/persons', (request, response) => {
+    const person = request.body;
+    const id = getRandomArbitrary(0, 1000000);
+    if(!person.name || !person.number || persons.filter(person => person.name !== person.name) > 0){
+        response.status(404).end();
+    } else {
+        const newPerson = {
+            name: person.name,
+            number: person.number,
+            id: id
+        };
+        persons = persons.concat(newPerson);
+        response.json(newPerson);
+    }
+});
+
 app.get('*', (req, res) => {
     res.status(404);
     res.send('<h1>404: Not found</h1>')
@@ -64,3 +84,7 @@ const port = 3001;
 app.listen(port, () => {
     console.log(`Server running on the port ${port}`);
 });
+
+function getRandomArbitrary(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
