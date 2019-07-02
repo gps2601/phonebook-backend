@@ -10,6 +10,18 @@ app.use(cors());
 app.use(morgan('tiny'));
 app.use(bodyParser.json());
 
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError' && error.kind == 'ObjectId') {
+        return response.status(400).send({error: 'malformatted id'})
+    }
+
+    next(error)
+}
+
+app.use(errorHandler);
+
 let persons = [
     {
         "name": "Geoffrey",
@@ -55,9 +67,11 @@ app.get('/api/persons/:id', (req, res) => {
 });
 
 app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id);
-    persons = persons.filter(person => person.id !== id);
-    res.status(204).end();
+    Person.findByIdAndRemove(req.params.id)
+        .then(result => {
+            response.status(204).end();
+        })
+        .catch(error => next(error));
 });
 
 app.post('/api/persons', (request, response) => {
