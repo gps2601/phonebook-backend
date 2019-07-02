@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 var morgan = require('morgan');
 const cors = require('cors');
+const Person = require('./models/person');
 
 app.use(express.static('build'))
 app.use(cors());
@@ -38,7 +39,9 @@ let persons = [
 ];
 
 app.get('/api/persons', (req, res) => {
-    res.send(persons);
+    Person.find({}).then(persons => {
+        res.json(persons.map(person => person.toJSON()))
+    });
 });
 
 app.get('/info', (req, res) => {
@@ -46,40 +49,31 @@ app.get('/info', (req, res) => {
 });
 
 app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const person = persons.find(person => person.id === id);
-    if(person) {
-        res.json(person);
-    } else {
-        res.status(404).end();
-    }
+    Person.findById(req.params.id).then(person => {
+        res.json(person.toJSON());
+    });
 });
 
 app.delete('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id);
     persons = persons.filter(person => person.id !== id);
-
     res.status(204).end();
 });
 
 app.post('/api/persons', (request, response) => {
     const person = request.body;
-    const id = getRandomArbitrary(0, 1000000);
-    if(!person.name || !person.number || persons.filter(person => person.name !== person.name) > 0){
-        response.status(404).end();
-    } else {
-        const newPerson = {
-            name: person.name,
-            number: person.number,
-            id: id
-        };
-        persons = persons.concat(newPerson);
-        response.json(newPerson);
-    }
+
+    const newPerson = new Person({
+        name: person.name,
+        number: person.number,
+    });
+    newPerson.save().then(savedPerson => {
+        response.json(savedPerson.toJSON());
+    })
 });
 
 const unknownEndpoint = (request, response) => {
-    response.status(404).send({ error: 'unknown endpoint' })
+    response.status(404).send({error: 'unknown endpoint'})
 }
 app.use(unknownEndpoint);
 
