@@ -74,7 +74,7 @@ app.delete('/api/persons/:id', (req, res) => {
         .catch(error => next(error));
 });
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const person = request.body;
 
     const newPerson = new Person({
@@ -84,6 +84,7 @@ app.post('/api/persons', (request, response) => {
     newPerson.save().then(savedPerson => {
         response.json(savedPerson.toJSON());
     })
+        .catch(error => next(error))
 });
 
 const unknownEndpoint = (request, response) => {
